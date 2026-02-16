@@ -6,6 +6,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <!-- Use pre-generated gRPC classes -->
+<ItemGroup>
+  <Compile Include="Protos/Generated/*.cs" />
+</ItemGroup>
+
   <ItemGroup>
     <Protobuf Include="Protos\bigdata.proto" GrpcServices="Server" />
   </ItemGroup>

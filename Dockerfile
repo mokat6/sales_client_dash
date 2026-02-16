@@ -1,7 +1,7 @@
 # =========================
 # BUILD STAGE
 # =========================
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 
 WORKDIR /src
 
@@ -25,7 +25,7 @@ RUN npm run build
 # =========================
 # RUNTIME STAGE
 # =========================
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
 
 # Install Caddy (lightweight)
 RUN apt-get update && apt-get install -y caddy && apt-get clean
@@ -48,5 +48,4 @@ EXPOSE 80
 CMD sh -c "\
 dotnet /app/big_data/big_data.dll --urls=http://0.0.0.0:8081 & \
 dotnet /app/gateway/gateway.dll --urls=http://0.0.0.0:8080 & \
-caddy run --config /etc/caddy/Caddyfile --adapter caddyfile & \
-wait -n"
+caddy run --config /etc/caddy/Caddyfile --adapter caddyfile"

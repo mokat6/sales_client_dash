@@ -10,6 +10,8 @@
     <NoWarn>1591</NoWarn> <!-- optional: hide missing XML doc warnings -->
 <!--  -->
 
+  <PublishProtobuf>false</PublishProtobuf>
+
   </PropertyGroup>
 
 
@@ -38,8 +40,8 @@
 
   </ItemGroup>
 
-  <ItemGroup>
+  <!-- <ItemGroup>
     <Protobuf Include="../big_data/Protos/bigdata.proto" GrpcServices="Client" />
     
-  </ItemGroup>
+  </ItemGroup> -->
 </Project>

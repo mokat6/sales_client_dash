@@ -4,16 +4,20 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+
+      <!-- Disable gRPC protobuf compilation -->
+  <PublishProtobuf>false</PublishProtobuf>
+
   </PropertyGroup>
 
   <!-- Use pre-generated gRPC classes -->
-<ItemGroup>
+<!-- <ItemGroup>
   <Compile Include="Protos/Generated/*.cs" />
-</ItemGroup>
+</ItemGroup> -->
 
-  <ItemGroup>
+  <!-- <ItemGroup>
     <Protobuf Include="Protos\bigdata.proto" GrpcServices="Server" />
-  </ItemGroup>
+  </ItemGroup> -->
 
   <ItemGroup>
     <PackageReference Include="Grpc.AspNetCore" Version="2.71.0" />

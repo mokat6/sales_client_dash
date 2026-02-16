@@ -1,0 +1,14 @@
+services:
+  portfolio_app:
+    build: .
+    image: volto_sales_img
+    container_name: volto_sales_cont
+    ports:
+      - "7061:80"
+    restart: unless-stopped
+    networks:
+      - caonima-wang
+
+networks:
+  caonima-wang:
+    external: true

@@ -1,0 +1,8 @@
+:80
+
+root * /app/frontend
+file_server
+
+handle /api/* {
+    reverse_proxy localhost:8080
+}

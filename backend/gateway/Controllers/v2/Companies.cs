@@ -1,0 +1,117 @@
+using gatewayRoot.Dtos;
+using Microsoft.AspNetCore.Mvc;
+using gatewayRoot.Services;
+using Grpc.Core;
+using Microsoft.AspNetCore.JsonPatch;
+using Asp.Versioning;
+
+namespace GatewayRoot.Controllers.v2
+{
+    [ApiController]
+    [Route("api/v{apiVersion:apiVersion}/companies")]
+    [ApiVersion("2")]
+
+    public class CompaniesController : ControllerBase
+    {
+        private readonly BigDataGrpcClient _bigDataClient;
+
+        public CompaniesController(BigDataGrpcClient bigDataClient)
+        {
+            _bigDataClient = bigDataClient;
+        }
+
+        /// <remarks>
+        /// The resource is the same as /api/v2/companies. Implemented with offset based pagination. The other endpoint has cursor based pagination. 
+        /// </remarks>
+        [HttpGet("offset-based", Name = "ListCompaniesOffset")]
+        public async Task<ActionResult<CompaniesResponseOffset>> GetCompaniesByOffset([FromQuery] int pageIndex = 0, [FromQuery] int pageSize = 12)
+
+        {
+            // return await _bigDataClient.ListCompaniesAsync(pageSize, cursor);
+
+            var response = await _bigDataClient.ListCompaniesByOffsetAsync(pageIndex, pageSize);
+
+            return Ok(response);
+        }
+
+        /// <remarks>
+        /// Pagination is cursor based. In the first request cursor == null.
+        /// The following requests cursor value comes from the response.
+        /// </remarks>
+        [HttpGet("", Name = "ListCompaniesCursor")]
+        public async Task<ActionResult<CompaniesResponseCursor>> GetWithCursor(
+            [FromQuery] int? pageSize,
+            [FromQuery] string? cursor = null,
+            [FromQuery] string? search = null,
+            [FromQuery] string? sortBy = null,
+            [FromQuery] string? sortDirection = null,
+            [FromQuery] bool isDownloadAll = false
+            )
+        {
+            var response = await _bigDataClient.ListCompaniesWithCursorAsync(pageSize, cursor, search, sortBy, sortDirection, isDownloadAll);
+            return Ok(response);
+        }
+
+        [HttpDelete("{id}", Name = "DeleteCompany")]
+        public async Task<IActionResult> Delete(long id)
+        {
+            try
+            {
+                await _bigDataClient.DeleteCompanyAsync(id);
+                return NoContent(); // 204
+            }
+            catch (RpcException ex) when (ex.StatusCode == Grpc.Core.StatusCode.NotFound)
+            {
+                return NotFound(); // 404
+            }
+            catch (RpcException ex)
+            {
+                // Other gRPC errors (optional)
+                return StatusCode(500, $"gRPC error: {ex.Status.Detail}");
+            }
+        }
+        /// <summary>
+        /// Applies a JSON Patch to a company.
+        /// </summary>
+        /// <remarks>
+        /// The request body must follow the <a href="https://tools.ietf.org/html/rfc6902">JSON Patch (RFC 6902)</a> format:
+        ///
+        /// ```json
+        /// [
+        ///   { "op": "replace", "path": "/name", "value": "Acme Inc." },
+        ///   { "op": "remove", "path": "/isObsolete" }
+        /// ]
+        /// ```
+        ///
+        /// **Note:** Ignore `operationType` in the schema — it's an internal property and not required.
+        /// </remarks>
+        [HttpPatch("{id}", Name = "PatchCompany")]
+        [Consumes("application/json-patch+json")]
+        public async Task<ActionResult<CompanyDto>> PatchCompany(long id, [FromBody] JsonPatchDocument<CompanyDto> patchDoc)
+        {
+            try
+            {
+                var updatedCompany = await _bigDataClient.PatchCompanyAsync(id, patchDoc);
+                return Ok(updatedCompany);
+            }
+            catch (RpcException ex) when (ex.StatusCode == Grpc.Core.StatusCode.NotFound)
+            {
+                return NotFound(ex.Status.Detail);
+            }
+        }
+
+        [HttpGet("{id}", Name = "GetCompany")]
+        public async Task<ActionResult<CompanyDto>> GetCompany(long id)
+        {
+            var companyDto = await _bigDataClient.GetCompany(id);
+            if (companyDto == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(companyDto);
+        }
+
+    }
+
+}

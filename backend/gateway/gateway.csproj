@@ -12,6 +12,12 @@
 
   </PropertyGroup>
 
+
+<ItemGroup>
+  <!-- Skip .proto compilation in Docker -->
+  <Protobuf Remove="GrpcClients/*.proto" />
+</ItemGroup>
+
   <ItemGroup>
    <!-- gRPC client support -->
     <PackageReference Include="Asp.Versioning.Mvc" Version="8.1.0" />

@@ -45,9 +45,27 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddOpenApi();
 
+Console.WriteLine("========== ENVIRONMENT ==========");
+Console.WriteLine($"ASPNETCORE_ENVIRONMENT = {Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}");
+Console.WriteLine("=================================");
+
+Console.WriteLine($"GrpcSettings:ServerAddress = {builder.Configuration["GrpcSettings:ServerAddress"] ?? "NULL"}");
 
 //----------------
 var grpcAddress = builder.Configuration["GrpcSettings:ServerAddress"];
+Console.WriteLine("==== GrpcSettings:ServerAddress ====");
+Console.WriteLine(grpcAddress ?? "NULL");
+Console.WriteLine("===================================");
+
+
+Console.WriteLine("==== All Configuration Keys ====");
+foreach (var kv in builder.Configuration.AsEnumerable())
+{
+    Console.WriteLine($"{kv.Key} = {kv.Value}");
+}
+Console.WriteLine("================================");
+
+
 
 builder.Services.AddGrpcClient<ProtoApi.BigDataProtoService.BigDataProtoServiceClient>(o =>
 {

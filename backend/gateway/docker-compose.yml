@@ -1,0 +1,17 @@
+services:
+  big_data:
+    image: mcr.microsoft.com/dotnet/sdk:9.0  # full SDK for build/debug
+    container_name: gateway_prod_debug
+    working_dir: /app
+    volumes:
+      - .:/app  # mount the full source
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+    network_mode: "host"  # use host network so container can reach big_data via localhost
+
+#   ports:             # not needed when usinng `network_mode: "host"`
+#     - "7116:7116"
+    command: >
+      sh -c "dotnet restore &&
+             dotnet publish -c Release -o ./publish &&
+             dotnet ./publish/gateway.dll"

@@ -1,0 +1,14 @@
+services:
+  big_data:
+    image: mcr.microsoft.com/dotnet/sdk:9.0  # full SDK for build/debug
+    container_name: big_data_prod_debug
+    working_dir: /app
+    volumes:
+      - .:/app  # mount the full source
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+    network_mode: "host"
+#    ports:
+#      - "7115:7115"
+    command: >
+      sh -c "dotnet restore && dotnet publish -c Release -o ./publish && dotnet ./publish/big_data.dll"

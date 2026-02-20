@@ -69,6 +69,7 @@ Console.WriteLine("================================");
 
 builder.Services.AddGrpcClient<ProtoApi.BigDataProtoService.BigDataProtoServiceClient>(o =>
 {
+    // this comes from appsettings.(Production).json    GrpcSettings": { "ServerAddress
     o.Address = new Uri(grpcAddress);
 })
 // added this to support Download All rows in one go;

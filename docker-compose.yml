@@ -1,14 +1,11 @@
-services:
-  portfolio_app:
-    build: .
-    image: volto_sales_img
-    container_name: volto_sales_cont
-    ports:
-      - "7061:80"
-    restart: unless-stopped
-    networks:
-      - caonima-wang
+# http://localhost:7116/swagger/index.html
 
-networks:
-  caonima-wang:
-    external: true
+services:
+  volto_sales:
+    build: .
+    container_name: volto_sales_cont
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+    ports:
+      - "7115:7115"  # big_data
+      - "7116:7116"  # gateway

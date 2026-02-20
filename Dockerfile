@@ -1,51 +1,52 @@
-# =========================
-# BUILD STAGE
-# =========================
+# ===============================
+# Stage 1: Build stage (SDK)
+# ===============================
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 
+# Set working dir
 WORKDIR /src
 
-# Copy everything
+# Copy everything from the monorepo
 COPY . .
 
-# Restore & publish backend solution
-WORKDIR /src/backend
-RUN dotnet restore proj_x.sln
+# Restore dependencies for both projects
+RUN dotnet restore ./backend/big_data/big_data.csproj
+RUN dotnet restore ./backend/gateway/gateway.csproj
 
-# Publish services
-RUN dotnet publish big_data/big_data.csproj -c Release -o /app/big_data
-RUN dotnet publish gateway/gateway.csproj -c Release -o /app/gateway
+# Build & publish big_data
+RUN dotnet publish ./backend/big_data/big_data.csproj \
+    -c Release \
+    -o /app/big_data/publish
 
-# Build frontend
-WORKDIR /src/frontend
-RUN apt-get update && apt-get install -y nodejs npm
-RUN npm install
-RUN npm run build
+# Build & publish gateway
+RUN dotnet publish ./backend/gateway/gateway.csproj \
+    -c Release \
+    -o /app/gateway/publish
 
-# =========================
-# RUNTIME STAGE
-# =========================
+# ===============================
+# Stage 2: Runtime stage (lighter image)
+# ===============================
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
 
-# Install Caddy (lightweight)
-RUN apt-get update && apt-get install -y caddy && apt-get clean
-
+# Set working dir
 WORKDIR /app
 
-# Copy published backends
-COPY --from=build /app /app
+# Copy published outputs from build stage
+COPY --from=build /app/big_data/publish ./big_data
+COPY --from=build /app/gateway/publish ./gateway
 
-# Copy built frontend
-COPY --from=build /src/frontend/dist /app/frontend
+# Copy big_data configs
+COPY ./backend/big_data/appsettings.json ./big_data/
+COPY ./backend/big_data/appsettings.Production.json ./big_data/
 
-# Copy Caddyfile
-COPY Caddyfile /etc/caddy/Caddyfile
+# Copy gateway configs
+COPY ./backend/gateway/appsettings.json ./gateway/
+COPY ./backend/gateway/appsettings.Production.json ./gateway/
 
-ENV ASPNETCORE_ENVIRONMENT=Production
+# this doesn't do shit, just for reference. Expose in docker-compose.yml
+EXPOSE 7115
+EXPOSE 7116
 
-EXPOSE 80
-
-CMD sh -c "\
-dotnet /app/big_data/big_data.dll --urls=http://0.0.0.0:8081 & \
-dotnet /app/gateway/gateway.dll --urls=http://0.0.0.0:8080 & \
-caddy run --config /etc/caddy/Caddyfile --adapter caddyfile"
+# Run both services in one container
+# appsettings.json is picked up from current directory, so we cd into it.
+CMD sh -c "cd /app/big_data && dotnet big_data.dll & cd /app/gateway && dotnet gateway.dll"

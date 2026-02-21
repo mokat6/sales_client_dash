@@ -52,9 +52,6 @@ COPY --from=build-frontend /frontend/dist ./frontend/dist
 # Install Caddy
 RUN apk add --no-cache caddy tini
 
-COPY start.sh /start.sh
-RUN chmod +x /start.sh
-
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["sh", "-c", "\
     dotnet /app/big_data/big_data.dll & \

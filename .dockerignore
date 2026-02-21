@@ -1,7 +1,14 @@
+# Node / .NET build outputs
 **/node_modules
 **/bin
 **/obj
+frontend/dist
+frontend/node_modules
+frontend/xxnode_modules
+
+# Git
 .git
 .gitignore
+
+# Misc
 DB backups
-frontend/dist

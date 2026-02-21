@@ -9,3 +9,4 @@ services:
     ports:
       - "7115:7115"  # big_data
       - "7116:7116"  # gateway
+      - "7668:80" # front end

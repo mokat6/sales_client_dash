@@ -32,7 +32,7 @@ RUN npm run build   # outputs into ./dist
 # ===============================
 # Stage 2: Runtime stage
 # ===============================
-FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS runtime
 
 WORKDIR /app
 

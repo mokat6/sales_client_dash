@@ -54,8 +54,8 @@ RUN apk add --no-cache caddy tini
 
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["sh", "-c", "\
-    dotnet /app/big_data/big_data.dll & \
-    dotnet /app/gateway/gateway.dll & \
+    cd /app/big_data && dotnet big_data.dll & \
+    cd /app/gateway && dotnet gateway.dll & \
     exec caddy file-server --root /app/frontend/dist --listen :80 \
 "]
 # Expose ports   

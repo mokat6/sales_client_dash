@@ -50,15 +50,24 @@ COPY ./backend/gateway/appsettings.Production.json ./gateway/
 COPY --from=build-frontend /frontend/dist ./frontend/dist
 
 # Install Caddy
-RUN apk add --no-cache caddy
+RUN apk add --no-cache caddy tini
 
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
+
+ENTRYPOINT ["/sbin/tini", "--"]
+CMD ["sh", "-c", "\
+    dotnet /app/big_data/big_data.dll & \
+    dotnet /app/gateway/gateway.dll & \
+    exec caddy file-server --root /app/frontend/dist --listen :80 \
+"]
 # Expose ports   
 # EXPOSE 7115   # big_data
 # EXPOSE 7116   # gateway
 # EXPOSE 80     # frontend (Caddy)
 
 # Start everything
-CMD sh -c "\
-    cd /app/big_data && dotnet big_data.dll & \
-    cd /app/gateway && dotnet gateway.dll & \
-    caddy file-server --root /app/frontend/dist --listen :80 --watch"
+# CMD sh -c "\
+#     cd /app/big_data && dotnet big_data.dll & \
+#     cd /app/gateway && dotnet gateway.dll & \
+#     caddy file-server --root /app/frontend/dist --listen :80"
